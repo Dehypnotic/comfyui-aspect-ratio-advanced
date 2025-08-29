@@ -94,28 +94,6 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 - **4:5 social** - Instagram post format
 - **5:7 print** - Standard print ratio
 
-## Usage
-
-### Basic Aspect Ratio Calculation
-
-1. Add the **🎯 Aspect Ratio Advanced** node to your workflow
-2. Select desired `aspect_ratio` preset
-3. Choose `scaling_mode` (target megapixels, min side, or max side)
-4. Adjust the corresponding value (megapixels, min_side, or max_side)
-
-### With Image Input
-
-1. Connect a **Load Image** node to the optional `image` input
-2. Set `use_image_ratio` to **Yes** to use the image's aspect ratio
-3. Set `use_image_ratio` to **No** to scale image to selected preset ratio
-
-### Custom Dimensions
-
-1. Select `aspect_ratio: custom`
-2. Set `custom_width` and `custom_height` to desired values
-3. Connected images will be scaled to these exact dimensions
-
-
 ## Technical Notes
 
 - All output dimensions are automatically rounded to multiples of 8 (required for latent space)
