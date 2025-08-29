@@ -49,7 +49,7 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 
 ### With Image Input
 
-1. Connect a **Load Image** node to the optional `image` input
+1. Connect an image node to the optional `image` input
 2. Set `use_image_ratio` to **Yes** to use the image's aspect ratio
 3. Set `use_image_ratio` to **No** to scale image to selected preset ratio
 
