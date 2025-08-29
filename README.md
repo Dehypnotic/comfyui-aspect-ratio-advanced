@@ -62,8 +62,7 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 |-------|------|-------------|
 | `custom_width` | INT | Width when using custom aspect ratio |
 | `custom_height` | INT | Height when using custom aspect ratio |
-| `aspect_ratio` | COMBO | Preset aspect ratios or custom |
-| `scaling_mode` | COMBO | How to scale dimensions (megapixels/min/max side) |
+| `scaling` | COMBO | How to scale dimensions (megapixels/min/max side/aspect ratios) |
 | `use_image_ratio` | COMBO | Use connected image's ratio (Yes/No) |
 | `target_megapixels` | FLOAT | Target resolution in megapixels |
 | `min_side` | INT | Shortest dimension in pixels |
@@ -107,13 +106,6 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-Pull requests welcome! Please:
-1. Test your changes thoroughly
-2. Update documentation for new features
-3. Follow the existing code style
 
 ## Changelog
 
