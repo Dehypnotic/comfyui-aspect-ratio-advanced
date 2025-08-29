@@ -94,9 +94,6 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 - **4:5 social** - Instagram post format
 - **5:7 print** - Standard print ratio
 
-
-3. Restart ComfyUI
-
 ## Usage
 
 ### Basic Aspect Ratio Calculation
