@@ -2,24 +2,21 @@
 
 An advanced aspect ratio calculator and image scaler for ComfyUI with flexible scaling modes and intelligent image handling.
 
-<img width="401" height="598" alt="image" src="https://github.com/user-attachments/assets/472ac2a9-4687-464d-87e0-f0a35027c58b" />
+<img width="292" height="416" alt="image" src="https://github.com/user-attachments/assets/4407a4ae-40b3-4cb6-8140-d0c128c98d9a" />
+
 
 ## Features
 
-🎯 **Smart Aspect Ratio Calculation**
-- 12 preset aspect ratios (square, portrait, landscape, social media formats)
-- Custom dimensions support
-- Automatic megapixel-based scaling
-
-📐 **Flexible Scaling Modes**
-- **Target Megapixels**: Scale to achieve specific resolution
+📐 **Flexible Scaling**
+- **Custom dimensions**: Scale to custom width and height.
+- **Target Megapixels**: Scale to achieve a specific resolution
 - **Min Side**: Set shortest dimension, maintain aspect ratio  
 - **Max Side**: Set longest dimension, maintain aspect ratio
+- **12 preset aspect ratios**: square, portrait, landscape, and social media formats
 
 🖼️ **Intelligent Image Processing**
 - Optional image input automatically detects aspect ratio
 - Real-time image scaling to calculated dimensions
-- Toggle control for using image ratio vs presets
 
 ⚡ **Advanced Controls**
 - Dimension flipping (portrait ↔ landscape)
