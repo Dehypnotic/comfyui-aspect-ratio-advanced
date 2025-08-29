@@ -1,0 +1,209 @@
+import torch
+import torch.nn.functional as F
+import math
+
+class AspectRatioAdvanced:
+    """
+    Advanced Aspect Ratio Node with flexible scaling modes and explicit image ratio control
+    - Custom dimensions when "custom" is selected
+    - Use_image_ratio toggle for explicit control over image input behavior
+    - Image scaling output when image input is connected
+    """
+    
+    def __init__(self):
+        pass
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        ratio_presets = [
+            "custom",
+            "1:1 square", 
+            "4:3 standard",
+            "3:2 classic",
+            "16:9 widescreen",
+            "21:9 ultrawide",
+            "3:4 portrait",
+            "2:3 photo",
+            "9:16 mobile",
+            "9:21 vertical",
+            "4:5 social",
+            "5:7 print"
+        ]
+        
+        scaling_modes = ["target megapixels", "min side", "max side"]
+        
+        return {
+            "required": {
+                "custom_width": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
+                "custom_height": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
+                "aspect_ratio": (ratio_presets,),
+                "scaling_mode": (scaling_modes,),
+                "use_image_ratio": (["No", "Yes"], {"default": "Yes", "tooltip": "Use connected image's aspect ratio when available. Set to No to use preset ratio even with image connected."}),
+                "target_megapixels": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 16.0, "step": 0.1}),
+                "min_side": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
+                "max_side": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
+                "flip_dimensions": (["No", "Yes"],),
+                "batch_count": ("INT", {"default": 1, "min": 1, "max": 64})
+            },
+            "optional": {
+                "image": ("IMAGE",),
+            }
+        }
+    
+    RETURN_TYPES = ("INT", "INT", "INT", "LATENT", "IMAGE", "STRING")
+    RETURN_NAMES = ("width", "height", "batch_count", "empty_latent", "scaled_image", "resolution_info")
+    FUNCTION = "calculate_resolution"
+    CATEGORY = "CustomNodes/Resolution"
+    
+    def calculate_resolution(self, custom_width, custom_height, aspect_ratio, scaling_mode, use_image_ratio, target_megapixels, min_side, max_side, flip_dimensions, batch_count, image=None):
+        
+        ratio_map = {
+            "1:1 square": (1, 1),
+            "4:3 standard": (4, 3), 
+            "3:2 classic": (3, 2),
+            "16:9 widescreen": (16, 9),
+            "21:9 ultrawide": (21, 9),
+            "3:4 portrait": (3, 4),
+            "2:3 photo": (2, 3),
+            "9:16 mobile": (9, 16),
+            "9:21 vertical": (9, 21),
+            "4:5 social": (4, 5),
+            "5:7 print": (5, 7)
+        }
+        
+        def make_divisible_by_8(value):
+            return max(64, (value // 8) * 8)
+        
+        scaled_image = None
+        
+        # 🖼️ Bruk image ratio hvis toggle er på og image er koblet til
+        if image is not None and use_image_ratio == "Yes":
+            img_height = image.shape[1]
+            img_width = image.shape[2]
+            image_ratio = img_width / img_height
+            
+            if scaling_mode == "target megapixels":
+                total_pixels = target_megapixels * 1_000_000
+                k = math.sqrt(total_pixels / (img_width * img_height))
+                width = int(img_width * k)
+                height = int(img_height * k)
+            elif scaling_mode == "min side":
+                if img_width <= img_height:
+                    width = min_side
+                    height = int(min_side / image_ratio)
+                else:
+                    height = min_side
+                    width = int(min_side * image_ratio)
+            elif scaling_mode == "max side":
+                if img_width >= img_height:
+                    width = max_side
+                    height = int(max_side / image_ratio)
+                else:
+                    height = max_side
+                    width = int(max_side * image_ratio)
+            
+            width = make_divisible_by_8(width)
+            height = make_divisible_by_8(height)
+            
+            # Skaler input image
+            image_permuted = image.permute(0, 3, 1, 2)
+            scaled_image_permuted = F.interpolate(
+                image_permuted, 
+                size=(height, width), 
+                mode='bilinear', 
+                align_corners=False
+            )
+            scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
+        
+        # 📐 Bruk preset aspect ratios
+        elif aspect_ratio != "custom" and aspect_ratio in ratio_map:
+            ratio_w, ratio_h = ratio_map[aspect_ratio]
+            
+            if scaling_mode == "target megapixels":
+                total_pixels = target_megapixels * 1_000_000
+                k = math.sqrt(total_pixels / (ratio_w * ratio_h))
+                width = int(ratio_w * k)
+                height = int(ratio_h * k)
+            elif scaling_mode == "min side":
+                shorter_ratio = min(ratio_w, ratio_h)
+                scaling_factor = min_side / shorter_ratio
+                width = int(ratio_w * scaling_factor)
+                height = int(ratio_h * scaling_factor)
+            elif scaling_mode == "max side":
+                longer_ratio = max(ratio_w, ratio_h)
+                scaling_factor = max_side / longer_ratio
+                width = int(ratio_w * scaling_factor)
+                height = int(ratio_h * scaling_factor)
+            
+            width = make_divisible_by_8(width)
+            height = make_divisible_by_8(height)
+            
+            # Hvis image er koblet til men use_image_ratio = No, skaler image til preset ratio
+            if image is not None:
+                image_permuted = image.permute(0, 3, 1, 2)
+                scaled_image_permuted = F.interpolate(
+                    image_permuted, 
+                    size=(height, width), 
+                    mode='bilinear', 
+                    align_corners=False
+                )
+                scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
+        
+        # ⚙️ Bruk custom dimensjoner
+        else:
+            width = make_divisible_by_8(custom_width)
+            height = make_divisible_by_8(custom_height)
+            
+            # Skaler image til custom dimensjoner hvis tilgjengelig
+            if image is not None:
+                image_permuted = image.permute(0, 3, 1, 2)
+                scaled_image_permuted = F.interpolate(
+                    image_permuted, 
+                    size=(height, width), 
+                    mode='bilinear', 
+                    align_corners=False
+                )
+                scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
+        
+        # 🔄 Bytt dimensjoner hvis ønsket
+        if flip_dimensions == "Yes":
+            width, height = height, width
+            if scaled_image is not None:
+                scaled_image_permuted = scaled_image.permute(0, 3, 1, 2)
+                scaled_image_permuted = F.interpolate(
+                    scaled_image_permuted, 
+                    size=(height, width), 
+                    mode='bilinear', 
+                    align_corners=False
+                )
+                scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
+        
+        # Opprett empty latent tensor
+        latent_width = width // 8
+        latent_height = height // 8
+        latent = torch.zeros([batch_count, 4, latent_height, latent_width])
+        
+        # Info-streng
+        actual_mp = (width * height) / 1_000_000
+        actual_min = min(width, height)
+        actual_max = max(width, height)
+        
+        if image is not None and use_image_ratio == "Yes":
+            source_info = "from image"
+        elif aspect_ratio == "custom":
+            source_info = "custom dimensions"
+        else:
+            source_info = f"preset {aspect_ratio}"
+        
+        resolution_info = f"{width}x{height} ({actual_mp:.2f}MP, {width/height:.2f}:1, {source_info})"
+        
+        return (width, height, batch_count, {"samples": latent}, scaled_image, resolution_info)
+
+# Node mapping
+NODE_CLASS_MAPPINGS = {
+    "AspectRatioAdvanced": AspectRatioAdvanced
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "AspectRatioAdvanced": "🎯 Aspect Ratio Advanced"
+}
