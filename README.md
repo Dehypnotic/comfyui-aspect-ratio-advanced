@@ -34,7 +34,7 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 
 ## Usage
 
-### Basic Aspect Ratio Calculation
+### Aspect Ratio Calculation
 
 1. Add the **🎯 Aspect Ratio Advanced** node to your workflow
 2. Select desired `aspect_ratio` preset
