@@ -2,6 +2,8 @@
 
 An advanced aspect ratio calculator and image scaler for ComfyUI with flexible scaling modes and intelligent image handling.
 
+<img width="405" height="625" alt="image" src="https://github.com/user-attachments/assets/b9be0a11-f8d8-4e37-aefb-ab66abb682ad" />
+
 ## Features
 
 🎯 **Smart Aspect Ratio Calculation**
