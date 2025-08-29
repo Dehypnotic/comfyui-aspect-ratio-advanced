@@ -32,11 +32,11 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
    ```bashcd
    cd ComfyUI/custom_nodes/
    ```
-   3. Clone this repository:
+2. Clone this repository:
    ```bashcd
    git clone https://github.com/Dehypnotic/comfyui-aspect-ratio-advanced.git
    ```
-4. Restart ComfyUI
+3. Restart ComfyUI
 
 ## Usage
 
