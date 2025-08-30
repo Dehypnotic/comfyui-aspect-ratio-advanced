@@ -45,24 +45,24 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 
 ## Usage
 
-### Aspect Ratio Calculation
+### Basic Aspect Ratio Calculation
 
-1. Add the **🎯 Aspect Ratio Advanced** node to your workflow
-2. Select desired `aspect_ratio` preset
-3. Choose `scaling_mode` (target megapixels, min side, or max side)
-4. Adjust the corresponding value (megapixels, min_side, or max_side)
+1. Select desired `aspect_ratio` preset
+2. Choose `scaling_mode` (target megapixels, min side, max side, or custom dimensions)
+3. Adjust the corresponding value
 
 ### With Image Input
 
 1. Connect an image node to the optional `image` input
 2. Set `use_image_ratio` to **Yes** to use the image's aspect ratio
-3. Set `use_image_ratio` to **No** to scale image to selected preset ratio
+3. Set `use_image_ratio` to **No** to scale image to selected preset as describe above
+4. Optional image outputs will be scaled
 
 ### Custom Dimensions
 
-1. Select `aspect_ratio: custom`
+1. Select `scaling_mode: custom dimensions`
 2. Set `custom_width` and `custom_height` to desired values
-3. Connected images will be scaled to these exact dimensions
+3. Connected image outputs will be scaled to these exact dimensions
 
 ## Node Inputs
 
