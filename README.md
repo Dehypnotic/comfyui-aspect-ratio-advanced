@@ -8,7 +8,7 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 
 📐 **Flexible Scaling**
 - **Aspect Ratio**: Choose an aspect ratio to be calculated from target megapixels, min/max side, or input image.
-- **Custom dimensions**: Scale to custom width and height.
+- **Custom dimensions**: Scale to custom width and height
 - **Target Megapixels**: Scale to achieve a specific resolution
 - **Min Side**: Set shortest dimension, maintain aspect ratio  
 - **Max Side**: Set longest dimension, maintain aspect ratio
