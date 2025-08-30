@@ -64,6 +64,8 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 2. Set `custom_width` and `custom_height` to desired values
 3. Connected image outputs will be scaled to these exact dimensions
 
+<img width="694" height="649" alt="image" src="https://github.com/user-attachments/assets/45ba58cd-6b4e-4a9c-ab32-6783c86e211b" />
+
 ## Node Inputs
 
 | Input | Type | Description |
