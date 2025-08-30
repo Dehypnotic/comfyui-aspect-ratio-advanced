@@ -4,8 +4,9 @@ import math
 
 class AspectRatioAdvanced:
     """
-    Advanced Aspect Ratio Node v0.2.0 - Simplified UX with combined scaling field
-    No more confusion between aspect_ratio and scaling_mode!
+    Advanced Aspect Ratio Node v0.2.0 - Fixed UX with proper separation
+    - aspect_ratio: Which ratio to use
+    - scaling_mode: How to scale it (including custom dimensions)
     """
     
     def __init__(self):
@@ -13,12 +14,8 @@ class AspectRatioAdvanced:
     
     @classmethod
     def INPUT_TYPES(cls):
-        # Kombinert scaling field - logisk rekkefølge: fleksible moduser først, så presets
-        scaling_options = [
-            "custom dimensions",
-            "target megapixels", 
-            "min side",
-            "max side",
+        # Aspect ratios uten "custom" - bare rene aspect ratios
+        aspect_ratios = [
             "1:1 square", 
             "4:3 standard",
             "3:2 classic",
@@ -32,12 +29,21 @@ class AspectRatioAdvanced:
             "5:7 print"
         ]
         
+        # Scaling modes inkluderer nå "custom dimensions" 
+        scaling_modes = [
+            "custom dimensions",
+            "target megapixels", 
+            "min side", 
+            "max side"
+        ]
+        
         return {
             "required": {
                 "custom_width": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
                 "custom_height": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
-                "scaling": (scaling_options,),
-                "use_image_ratio": (["No", "Yes"], {"default": "Yes", "tooltip": "Use connected image's aspect ratio when available. Set to No to use scaling preset even with image connected."}),
+                "aspect_ratio": (aspect_ratios,),
+                "scaling_mode": (scaling_modes,),
+                "use_image_ratio": (["No", "Yes"], {"default": "Yes", "tooltip": "Use connected image's aspect ratio when available. Set to No to use aspect_ratio preset even with image connected."}),
                 "target_megapixels": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 16.0, "step": 0.1}),
                 "min_side": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
                 "max_side": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
@@ -54,7 +60,7 @@ class AspectRatioAdvanced:
     FUNCTION = "calculate_resolution"
     CATEGORY = "CustomNodes/Resolution"
     
-    def calculate_resolution(self, custom_width, custom_height, scaling, use_image_ratio, target_megapixels, min_side, max_side, flip_dimensions, batch_count, image=None):
+    def calculate_resolution(self, custom_width, custom_height, aspect_ratio, scaling_mode, use_image_ratio, target_megapixels, min_side, max_side, flip_dimensions, batch_count, image=None):
         
         ratio_map = {
             "1:1 square": (1, 1),
@@ -81,30 +87,28 @@ class AspectRatioAdvanced:
             img_width = image.shape[2]
             image_ratio = img_width / img_height
             
-            # Bruk scaling mode på image ratio
-            if scaling == "target megapixels":
+            if scaling_mode == "target megapixels":
                 total_pixels = target_megapixels * 1_000_000
                 k = math.sqrt(total_pixels / (img_width * img_height))
                 width = int(img_width * k)
                 height = int(img_height * k)
-            elif scaling == "min side":
+            elif scaling_mode == "min side":
                 if img_width <= img_height:
                     width = min_side
                     height = int(min_side / image_ratio)
                 else:
                     height = min_side
                     width = int(min_side * image_ratio)
-            elif scaling == "max side":
+            elif scaling_mode == "max side":
                 if img_width >= img_height:
                     width = max_side
                     height = int(max_side / image_ratio)
                 else:
                     height = max_side
                     width = int(max_side * image_ratio)
-            else:
-                # Andre scaling modes når image er tilkoblet - bruk image ratio
-                width = img_width
-                height = img_height
+            else:  # custom dimensions
+                width = custom_width
+                height = custom_height
             
             width = make_divisible_by_8(width)
             height = make_divisible_by_8(height)
@@ -119,8 +123,8 @@ class AspectRatioAdvanced:
             )
             scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
-        # 📐 Bruk scaling preset (enten uten image, eller med use_image_ratio = No)
-        elif scaling == "custom dimensions":
+        # 📐 Bruk aspect ratio preset
+        elif scaling_mode == "custom dimensions":
             width = make_divisible_by_8(custom_width)
             height = make_divisible_by_8(custom_height)
             
@@ -135,21 +139,24 @@ class AspectRatioAdvanced:
                 )
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
-        elif scaling in ratio_map:
-            ratio_w, ratio_h = ratio_map[scaling]
+        elif aspect_ratio in ratio_map:
+            ratio_w, ratio_h = ratio_map[aspect_ratio]
             
-            # Kan ikke bruke megapixels/min/max scaling på preset ratios direkt
-            # Bruk ratio med standard 1024 base for nå
-            if scaling in ["target megapixels", "min side", "max side"]:
-                # Dette bør ikke skje med den nye strukturen, men fallback
-                width = 1024
-                height = 1024
-            else:
-                # Beregn dimensjoner basert på preset ratio
-                base_pixels = target_megapixels * 1_000_000
-                k = math.sqrt(base_pixels / (ratio_w * ratio_h))
+            if scaling_mode == "target megapixels":
+                total_pixels = target_megapixels * 1_000_000
+                k = math.sqrt(total_pixels / (ratio_w * ratio_h))
                 width = int(ratio_w * k)
                 height = int(ratio_h * k)
+            elif scaling_mode == "min side":
+                shorter_ratio = min(ratio_w, ratio_h)
+                scaling_factor = min_side / shorter_ratio
+                width = int(ratio_w * scaling_factor)
+                height = int(ratio_h * scaling_factor)
+            elif scaling_mode == "max side":
+                longer_ratio = max(ratio_w, ratio_h)
+                scaling_factor = max_side / longer_ratio
+                width = int(ratio_w * scaling_factor)
+                height = int(ratio_h * scaling_factor)
             
             width = make_divisible_by_8(width)
             height = make_divisible_by_8(height)
@@ -164,11 +171,6 @@ class AspectRatioAdvanced:
                     align_corners=False
                 )
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
-        
-        else:
-            # Fallback
-            width = make_divisible_by_8(custom_width)
-            height = make_divisible_by_8(custom_height)
         
         # 🔄 Flip hvis ønsket
         if flip_dimensions == "Yes":
@@ -195,10 +197,10 @@ class AspectRatioAdvanced:
         
         if image is not None and use_image_ratio == "Yes":
             source_info = "from image"
-        elif scaling == "custom dimensions":
+        elif scaling_mode == "custom dimensions":
             source_info = "custom dimensions"
         else:
-            source_info = f"{scaling}"
+            source_info = f"{aspect_ratio} + {scaling_mode}"
         
         resolution_info = f"{width}x{height} ({actual_mp:.2f}MP, {width/height:.2f}:1, {source_info})"
         
