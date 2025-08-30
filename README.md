@@ -1,4 +1,4 @@
-# AspectRatioAdvanced - ComfyUI Node
+# Aspect Ratio Advanced - ComfyUI Node
 
 An advanced aspect ratio calculator and image scaler for ComfyUI with flexible scaling modes and intelligent image handling.
 
@@ -28,7 +28,7 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 ### 1. Via ComfyUI Manager
 
 1. Open ComfyUI Manager → Custom Nodes
-2. Search for **AdvancedAspectRatio**.
+2. Search for **Aspect Ratio Advanced**.
 3. Press **Install** and restart ComfyUI.
 
 ### 2. Manually by clone or copy.
@@ -125,6 +125,9 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - Three scaling modes (megapixels, min/max side)
 - Optional image input with intelligent ratio detection
 - Real-time image scaling output
+
+### v0.2.0
+- custom dimensions moved to `scaling_mode`
 
 ---
 
