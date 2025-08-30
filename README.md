@@ -2,12 +2,12 @@
 
 An advanced aspect ratio calculator and image scaler for ComfyUI with flexible scaling modes and intelligent image handling.
 
-<img width="292" height="416" alt="image" src="https://github.com/user-attachments/assets/4407a4ae-40b3-4cb6-8140-d0c128c98d9a" />
-
+<img width="399" height="604" alt="image" src="https://github.com/user-attachments/assets/8351df62-0a5e-479a-99c2-ff57d4e752f8" />
 
 ## Features
 
 📐 **Flexible Scaling**
+- **Aspect Ratio**: Choose an aspect ratio to be calculated from target megapixels, min/max side, or input image.
 - **Custom dimensions**: Scale to custom width and height.
 - **Target Megapixels**: Scale to achieve a specific resolution
 - **Min Side**: Set shortest dimension, maintain aspect ratio  
@@ -25,11 +25,19 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 
 ## Installation
 
+### 1. Installation via ComfyUI Manager
+
+1. Open ComfyUI Manager → Custom Nodes
+2. Search for **AdvancedAspectRatio**.
+3. Press **Install** and restart ComfyUI.
+
+### 2. Installation by clone or copy.
+
 1. Navigate to your ComfyUI custom nodes directory:
    ```bashcd
    cd ComfyUI/custom_nodes/
    ```
-2. Clone this repository:
+2. Clone or copy this repository:
    ```bashcd
    git clone https://github.com/Dehypnotic/comfyui-aspect-ratio-advanced.git
    ```
