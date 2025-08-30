@@ -15,7 +15,7 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 - **12 preset aspect ratios**: square, portrait, landscape, and social media formats
 
 🖼️ **Intelligent Image Processing**
-- Optional image input automatically detects aspect ratio
+- Optional image input automatically detects aspect ratio when `use_image_ratio` is set to `Yes`.
 - Real-time image scaling to calculated dimensions
 
 ⚡ **Advanced Controls**
