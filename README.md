@@ -48,7 +48,7 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 ### Basic Aspect Ratio Calculation
 
 1. Select desired `aspect_ratio` preset
-2. Choose `scaling_mode` (target megapixels, min side, max side, or custom dimensions)
+2. Choose `scaling_mode` (target megapixels, min or max side)
 3. Adjust the corresponding value
 
 ### With Image Input
