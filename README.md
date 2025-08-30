@@ -25,13 +25,13 @@ An advanced aspect ratio calculator and image scaler for ComfyUI with flexible s
 
 ## Installation
 
-### 1. Installation via ComfyUI Manager
+### 1. Via ComfyUI Manager
 
 1. Open ComfyUI Manager → Custom Nodes
 2. Search for **AdvancedAspectRatio**.
 3. Press **Install** and restart ComfyUI.
 
-### 2. Installation by clone or copy.
+### 2. Manually by clone or copy.
 
 1. Navigate to your ComfyUI custom nodes directory:
    ```bashcd
