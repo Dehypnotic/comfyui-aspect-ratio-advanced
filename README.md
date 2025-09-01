@@ -1,4 +1,4 @@
-# Aspect Ratio Advanced - ComfyUI Node
+# AspectRatioAdvanced - ComfyUI Node
 
 An advanced aspect ratio calculator and image scaler for ComfyUI with flexible scaling modes and intelligent image handling.
 
