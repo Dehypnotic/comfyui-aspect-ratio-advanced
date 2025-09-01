@@ -126,9 +126,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - Optional image input with intelligent ratio detection
 - Real-time image scaling output
 
-### v0.2.0
-- custom dimensions moved to `scaling_mode`
-
 ---
 
 **Created for the ComfyUI community** 💙
