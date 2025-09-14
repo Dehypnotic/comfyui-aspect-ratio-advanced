@@ -14,7 +14,7 @@ class AspectRatioAdvanced:
     
     @classmethod
     def INPUT_TYPES(cls):
-        # Aspect ratios uten "custom" - bare rene aspect ratios
+        # Aspect ratios without "custom" — only pure aspect ratios
         aspect_ratios = [
             "1:1 square", 
             "4:3 standard",
@@ -29,7 +29,7 @@ class AspectRatioAdvanced:
             "5:7 print"
         ]
         
-        # Scaling modes inkluderer nå "custom dimensions" 
+        # Scaling modes include "custom dimensions"
         scaling_modes = [
             "custom dimensions",
             "target megapixels", 
@@ -81,7 +81,7 @@ class AspectRatioAdvanced:
         
         scaled_image = None
         
-        # Image ratio har prioritet når toggle er på
+        # Image ratio has priority when the toggle is on
         if image is not None and use_image_ratio == "Yes":
             img_height = image.shape[1]
             img_width = image.shape[2]
@@ -113,7 +113,7 @@ class AspectRatioAdvanced:
             width = make_divisible_by_8(width)
             height = make_divisible_by_8(height)
             
-            # Skaler image
+            # Scale image
             image_permuted = image.permute(0, 3, 1, 2)
             scaled_image_permuted = F.interpolate(
                 image_permuted, 
@@ -123,12 +123,12 @@ class AspectRatioAdvanced:
             )
             scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
-        # Bruk aspect ratio preset
+        # Use aspect ratio preset
         elif scaling_mode == "custom dimensions":
             width = make_divisible_by_8(custom_width)
             height = make_divisible_by_8(custom_height)
             
-            # Skaler image til custom dimensjoner hvis tilgjengelig
+            # Scale image to custom dimensions if provided
             if image is not None:
                 image_permuted = image.permute(0, 3, 1, 2)
                 scaled_image_permuted = F.interpolate(
@@ -161,7 +161,7 @@ class AspectRatioAdvanced:
             width = make_divisible_by_8(width)
             height = make_divisible_by_8(height)
             
-            # Skaler image til preset ratio hvis tilgjengelig
+            # Scale image to preset ratio if provided
             if image is not None:
                 image_permuted = image.permute(0, 3, 1, 2)
                 scaled_image_permuted = F.interpolate(
@@ -172,7 +172,7 @@ class AspectRatioAdvanced:
                 )
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
-        # Flip hvis ønsket
+        # Flip if requested
         if flip_dimensions == "Yes":
             width, height = height, width
             if scaled_image is not None:
@@ -185,11 +185,11 @@ class AspectRatioAdvanced:
                 )
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
-        # Fallback: returner originalt bilde hvis skalert bilde mangler
+        # Fallback: return original image if no scaled image was produced
         if scaled_image is None and image is not None:
             scaled_image = image
 
-        # Opprett latent
+        # Create latent
         latent_width = width // 8
         latent_height = height // 8
         latent = torch.zeros([batch_count, 4, latent_height, latent_width])
