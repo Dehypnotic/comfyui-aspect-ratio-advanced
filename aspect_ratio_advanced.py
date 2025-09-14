@@ -81,7 +81,6 @@ class AspectRatioAdvanced:
         
         scaled_image = None
         
-        # 🖼️ Image ratio har prioritet når toggle er på
         # Image ratio har prioritet når toggle er på
         if image is not None and use_image_ratio == "Yes":
             img_height = image.shape[1]
@@ -124,7 +123,6 @@ class AspectRatioAdvanced:
             )
             scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
-        # 📐 Bruk aspect ratio preset
         # Bruk aspect ratio preset
         elif scaling_mode == "custom dimensions":
             width = make_divisible_by_8(custom_width)
@@ -174,7 +172,6 @@ class AspectRatioAdvanced:
                 )
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
-        # 🔄 Flip hvis ønsket
         # Flip hvis ønsket
         if flip_dimensions == "Yes":
             width, height = height, width
