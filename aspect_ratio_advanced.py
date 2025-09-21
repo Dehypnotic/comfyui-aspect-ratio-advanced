@@ -36,6 +36,14 @@ class AspectRatioAdvanced:
             "min side", 
             "max side"
         ]
+
+        scaling_methods = [
+            "nearest-exact",
+            "bilinear",
+            "area",
+            "bicubic",
+            "lanczos"
+        ]
         
         return {
             "required": {
@@ -47,6 +55,7 @@ class AspectRatioAdvanced:
                 "target_megapixels": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 16.0, "step": 0.1}),
                 "min_side": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
                 "max_side": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
+                "scaling_method": (scaling_methods, {"default": "bilinear"}),
                 "flip_dimensions": (["No", "Yes"],),
                 "batch_count": ("INT", {"default": 1, "min": 1, "max": 64})
             },
@@ -60,7 +69,7 @@ class AspectRatioAdvanced:
     FUNCTION = "calculate_resolution"
     CATEGORY = "CustomNodes/Resolution"
     
-    def calculate_resolution(self, custom_width, custom_height, aspect_ratio, scaling_mode, use_image_ratio, target_megapixels, min_side, max_side, flip_dimensions, batch_count, image=None):
+    def calculate_resolution(self, custom_width, custom_height, aspect_ratio, scaling_mode, use_image_ratio, target_megapixels, min_side, max_side, scaling_method, flip_dimensions, batch_count, image=None):
         
         ratio_map = {
             "1:1 square": (1, 1),
@@ -80,6 +89,11 @@ class AspectRatioAdvanced:
             return max(64, (value // 8) * 8)
         
         scaled_image = None
+
+        # PyTorch doesn't support Lanczos, so we'll fall back to Bicubic
+        interpolation_mode = scaling_method
+        if interpolation_mode == 'lanczos':
+            interpolation_mode = 'bicubic'
         
         # Image ratio has priority when the toggle is on
         if image is not None and use_image_ratio == "Yes":
@@ -118,7 +132,7 @@ class AspectRatioAdvanced:
             scaled_image_permuted = F.interpolate(
                 image_permuted, 
                 size=(height, width), 
-                mode='bilinear', 
+                mode=interpolation_mode, 
                 align_corners=False
             )
             scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
@@ -134,7 +148,7 @@ class AspectRatioAdvanced:
                 scaled_image_permuted = F.interpolate(
                     image_permuted, 
                     size=(height, width), 
-                    mode='bilinear', 
+                    mode=interpolation_mode, 
                     align_corners=False
                 )
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
@@ -167,7 +181,7 @@ class AspectRatioAdvanced:
                 scaled_image_permuted = F.interpolate(
                     image_permuted, 
                     size=(height, width), 
-                    mode='bilinear', 
+                    mode=interpolation_mode, 
                     align_corners=False
                 )
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
@@ -180,7 +194,7 @@ class AspectRatioAdvanced:
                 scaled_image_permuted = F.interpolate(
                     scaled_image_permuted, 
                     size=(height, width), 
-                    mode='bilinear', 
+                    mode=interpolation_mode, 
                     align_corners=False
                 )
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
@@ -218,4 +232,3 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "AspectRatioAdvanced": "🎯 AspectRatioAdvanced"
 }
-
