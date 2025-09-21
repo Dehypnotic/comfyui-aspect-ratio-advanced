@@ -47,9 +47,9 @@ class AspectRatioAdvanced:
         
         return {
             "required": {
+                "scaling_mode": (scaling_modes,),
                 "custom_width": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
                 "custom_height": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
-                "scaling_mode": (scaling_modes,),
                 "use_input_image_ratio": (["No", "Yes"], {"default": "Yes", "tooltip": "Use connected image's aspect ratio when available. Set to No to use aspect_ratio preset even with image connected."}),
                 "use_aspect_ratio:": (aspect_ratios,{"tooltip": "Used if neither custom dimensions nor input image ratio is used."}),
                 "target_megapixels": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 16.0, "step": 0.1}),
