@@ -69,7 +69,7 @@ class AspectRatioAdvanced:
     FUNCTION = "calculate_resolution"
     CATEGORY = "CustomNodes/Resolution"
     
-    def calculate_resolution(self, custom_width, custom_height, aspect_ratio, scaling_mode, use_input_image_ratio, target_megapixels, min_side, max_side, scaling_method, flip_dimensions, batch_count, image=None):
+    def calculate_resolution(self, custom_width, custom_height, use_aspect_ratio, scaling_mode, use_input_image_ratio, target_megapixels, min_side, max_side, scaling_method, flip_dimensions, batch_count, image=None):
         
         ratio_map = {
             "1:1 square": (1, 1),
@@ -149,8 +149,8 @@ class AspectRatioAdvanced:
                 scaled_image_permuted = _scale_image(image_permuted, height, width, interpolation_mode)
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
-        elif aspect_ratio in ratio_map:
-            ratio_w, ratio_h = ratio_map[aspect_ratio]
+        elif use_aspect_ratio in ratio_map:
+            ratio_w, ratio_h = ratio_map[use_aspect_ratio]
             
             if scaling_mode == "target megapixels":
                 total_pixels = target_megapixels * 1_000_000
@@ -204,7 +204,7 @@ class AspectRatioAdvanced:
         elif scaling_mode == "custom dimensions":
             source_info = "custom dimensions"
         else:
-            source_info = f"{aspect_ratio} + {scaling_mode}"
+            source_info = f"{use_aspect_ratio} + {scaling_mode}"
         
         resolution_info = f"{width}x{height} ({actual_mp:.2f}MP, {width/height:.2f}:1, {source_info})"
         
