@@ -69,7 +69,7 @@ class AspectRatioAdvanced:
     FUNCTION = "calculate_resolution"
     CATEGORY = "CustomNodes/Resolution"
     
-    def calculate_resolution(self, custom_width, custom_height, aspect_ratio, scaling_mode, use_image_ratio, target_megapixels, min_side, max_side, scaling_method, flip_dimensions, batch_count, image=None):
+    def calculate_resolution(self, custom_width, custom_height, aspect_ratio, scaling_mode, use_input_image_ratio, target_megapixels, min_side, max_side, scaling_method, flip_dimensions, batch_count, image=None):
         
         ratio_map = {
             "1:1 square": (1, 1),
@@ -102,7 +102,7 @@ class AspectRatioAdvanced:
             interpolation_mode = 'bicubic'
         
         # Image ratio has priority when the toggle is on
-        if image is not None and use_image_ratio == "Yes":
+        if image is not None and use_input_image_ratio == "Yes":
             img_height = image.shape[1]
             img_width = image.shape[2]
             image_ratio = img_width / img_height
@@ -199,7 +199,7 @@ class AspectRatioAdvanced:
         actual_min = min(width, height)
         actual_max = max(width, height)
         
-        if image is not None and use_image_ratio == "Yes":
+        if image is not None and use_input_image_ratio == "Yes":
             source_info = "from image"
         elif scaling_mode == "custom dimensions":
             source_info = "custom dimensions"
