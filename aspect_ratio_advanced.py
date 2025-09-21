@@ -49,9 +49,9 @@ class AspectRatioAdvanced:
             "required": {
                 "custom_width": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
                 "custom_height": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
-                "aspect_ratio": (aspect_ratios,),
                 "scaling_mode": (scaling_modes,),
-                "use_image_ratio": (["No", "Yes"], {"default": "Yes", "tooltip": "Use connected image's aspect ratio when available. Set to No to use aspect_ratio preset even with image connected."}),
+                "aspect_ratio": (aspect_ratios,),
+                "use_input_image_ratio": (["No", "Yes"], {"default": "Yes", "tooltip": "Use connected image's aspect ratio when available. Set to No to use aspect_ratio preset even with image connected."}),
                 "target_megapixels": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 16.0, "step": 0.1}),
                 "min_side": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
                 "max_side": ("INT", {"default": 1024, "min": 64, "max": 8192, "step": 8}),
