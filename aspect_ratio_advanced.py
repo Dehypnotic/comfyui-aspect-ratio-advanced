@@ -87,7 +87,13 @@ class AspectRatioAdvanced:
         
         def make_divisible_by_8(value):
             return max(64, (value // 8) * 8)
-        
+
+        def _scale_image(img_permuted, height, width, mode):
+            if mode in ['bilinear', 'bicubic']: # Only these support align_corners
+                return F.interpolate(img_permuted, size=(height, width), mode=mode, align_corners=False)
+            else:
+                return F.interpolate(img_permuted, size=(height, width), mode=mode)
+
         scaled_image = None
 
         # PyTorch doesn't support Lanczos, so we'll fall back to Bicubic
@@ -129,12 +135,7 @@ class AspectRatioAdvanced:
             
             # Scale image
             image_permuted = image.permute(0, 3, 1, 2)
-            scaled_image_permuted = F.interpolate(
-                image_permuted, 
-                size=(height, width), 
-                mode=interpolation_mode, 
-                align_corners=False
-            )
+            scaled_image_permuted = _scale_image(image_permuted, height, width, interpolation_mode)
             scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
         # Use aspect ratio preset
@@ -145,12 +146,7 @@ class AspectRatioAdvanced:
             # Scale image to custom dimensions if provided
             if image is not None:
                 image_permuted = image.permute(0, 3, 1, 2)
-                scaled_image_permuted = F.interpolate(
-                    image_permuted, 
-                    size=(height, width), 
-                    mode=interpolation_mode, 
-                    align_corners=False
-                )
+                scaled_image_permuted = _scale_image(image_permuted, height, width, interpolation_mode)
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
         elif aspect_ratio in ratio_map:
@@ -178,12 +174,7 @@ class AspectRatioAdvanced:
             # Scale image to preset ratio if provided
             if image is not None:
                 image_permuted = image.permute(0, 3, 1, 2)
-                scaled_image_permuted = F.interpolate(
-                    image_permuted, 
-                    size=(height, width), 
-                    mode=interpolation_mode, 
-                    align_corners=False
-                )
+                scaled_image_permuted = _scale_image(image_permuted, height, width, interpolation_mode)
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
         # Flip if requested
@@ -191,12 +182,7 @@ class AspectRatioAdvanced:
             width, height = height, width
             if scaled_image is not None:
                 scaled_image_permuted = scaled_image.permute(0, 3, 1, 2)
-                scaled_image_permuted = F.interpolate(
-                    scaled_image_permuted, 
-                    size=(height, width), 
-                    mode=interpolation_mode, 
-                    align_corners=False
-                )
+                scaled_image_permuted = _scale_image(scaled_image_permuted, height, width, interpolation_mode)
                 scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
         # Fallback: return original image if no scaled image was produced
