@@ -120,7 +120,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Changelog
 
 ### v0.2.0
-- Added scaling methods
+- Scaling methods added
 
 ### v0.1.0
 - Initial release
