@@ -32,6 +32,7 @@ class AspectRatioAdvanced:
         # Scaling modes include "custom dimensions"
         scaling_modes = [
             "custom dimensions",
+            "input dimensions",
             "target megapixels", 
             "min side", 
             "max side"
@@ -126,6 +127,9 @@ class AspectRatioAdvanced:
                 else:
                     height = max_side
                     width = int(max_side * image_ratio)
+            elif scaling_mode == "input dimensions":
+                width = img_width
+                height = img_height
             else:  # custom dimensions
                 width = custom_width
                 height = custom_height
@@ -138,6 +142,20 @@ class AspectRatioAdvanced:
             scaled_image_permuted = _scale_image(image_permuted, height, width, interpolation_mode)
             scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
         
+        # Use exact input image dimensions
+        elif scaling_mode == "input dimensions":
+            if image is not None:
+                img_height = image.shape[1]
+                img_width = image.shape[2]
+                width = make_divisible_by_8(img_width)
+                height = make_divisible_by_8(img_height)
+                image_permuted = image.permute(0, 3, 1, 2)
+                scaled_image_permuted = _scale_image(image_permuted, height, width, interpolation_mode)
+                scaled_image = scaled_image_permuted.permute(0, 2, 3, 1)
+            else:
+                width = make_divisible_by_8(custom_width)
+                height = make_divisible_by_8(custom_height)
+
         # Use aspect ratio preset
         elif scaling_mode == "custom dimensions":
             width = make_divisible_by_8(custom_width)
@@ -199,7 +217,9 @@ class AspectRatioAdvanced:
         actual_min = min(width, height)
         actual_max = max(width, height)
         
-        if image is not None and use_input_image_ratio == "Yes":
+        if scaling_mode == "input dimensions":
+            source_info = "input dimensions"
+        elif image is not None and use_input_image_ratio == "Yes":
             source_info = "from image"
         elif scaling_mode == "custom dimensions":
             source_info = "custom dimensions"
