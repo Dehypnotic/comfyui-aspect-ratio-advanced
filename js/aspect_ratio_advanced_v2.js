@@ -679,6 +679,11 @@ const DEFAULT_STATE = {
   custom_ratio_master: "width",
   custom_ratio_width: 1024,
   custom_ratio_height: 768,
+  custom_ratio_calc_mode: "min",
+  custom_ratio_value: 1024,
+  custom_ratio_value_min: 1024,
+  custom_ratio_value_max: 1024,
+  custom_ratio_value_megapixels: 1.0,
 
   custom_dimensions_width: 1024,
   custom_dimensions_height: 1024,
@@ -1065,16 +1070,36 @@ function calculateDims(state, connectedImageSize = null) {
       }
     }
 
-    const master = state.custom_ratio_master || "width";
-    if (master === "width") {
-      const wBase = parseFloat(safeMathEval(String(state.custom_ratio_width))) || 1024;
-      w = snapTo(wBase, snap);
-      h = snapTo(w / r, snap);
+    const calcMode = state.custom_ratio_calc_mode || "min";
+    const val = parseFloat(safeMathEval(String(state.custom_ratio_value))) || 1024;
+
+    let wCalc, hCalc;
+    if (calcMode === "min") {
+      if (r >= 1.0) {
+        hCalc = val;
+        wCalc = val * r;
+      } else {
+        wCalc = val;
+        hCalc = val / r;
+      }
+    } else if (calcMode === "max") {
+      if (r >= 1.0) {
+        wCalc = val;
+        hCalc = val / r;
+      } else {
+        hCalc = val;
+        wCalc = val * r;
+      }
+    } else if (calcMode === "megapixels") {
+      const area = val * 1000000;
+      wCalc = Math.sqrt(area * r);
+      hCalc = wCalc / r;
     } else {
-      const hBase = parseFloat(safeMathEval(String(state.custom_ratio_height))) || 768;
-      h = snapTo(hBase, snap);
-      w = snapTo(h * r, snap);
+      wCalc = 1024; hCalc = 1024;
     }
+
+    w = snapTo(wCalc, snap);
+    h = snapTo(hCalc, snap);
 
   } else if (mode === "custom_dimensions") {
     if (state.custom_dimensions_input_image && connectedImageSize) {
@@ -1531,31 +1556,86 @@ function renderUI(node) {
     toggleRow.appendChild(toggleLabel);
     content.appendChild(toggleRow);
 
-    // Quick-pick width buttons
-    const quickRow = document.createElement("div");
-    quickRow.className = "ara-v2-quickpicks";
-    QUICK_PICK_WIDTHS.forEach((wVal) => {
-      const qbtn = document.createElement("button");
-      qbtn.type = "button";
-      qbtn.className = "ara-v2-quickpick-btn";
-      if (state.custom_ratio_master === "width" && dims.w === wVal) {
-        qbtn.classList.add("active");
-      }
-      qbtn.textContent = wVal;
-      qbtn.addEventListener("click", (e) => {
+    // Modes: Min, Max, Megapixels for Custom Ratio
+    const modesRow = document.createElement("div");
+    modesRow.className = "ara-v2-calc-modes";
+
+    const calcModes = [
+      { id: "min", label: "Min" },
+      { id: "max", label: "Max" },
+      { id: "megapixels", label: "Megapixels" }
+    ];
+
+    calcModes.forEach((cm) => {
+      const modeBtn = document.createElement("button");
+      modeBtn.type = "button";
+      modeBtn.className = "ara-v2-mode-btn" + (state.custom_ratio_calc_mode === cm.id ? " active" : "");
+      modeBtn.textContent = cm.label;
+      modeBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        state.custom_ratio_master = "width";
-        state.custom_ratio_width = wVal;
+        state.custom_ratio_calc_mode = cm.id;
+
+        // Restore persistent value for the selected mode
+        if (cm.id === "megapixels") {
+          state.custom_ratio_value = state.custom_ratio_value_megapixels !== undefined ? state.custom_ratio_value_megapixels : 1.0;
+        } else if (cm.id === "max") {
+          state.custom_ratio_value = state.custom_ratio_value_max !== undefined ? state.custom_ratio_value_max : 1024;
+        } else {
+          state.custom_ratio_value = state.custom_ratio_value_min !== undefined ? state.custom_ratio_value_min : 1024;
+        }
+
         writeState(node, state);
         renderUI(node);
       });
-      quickRow.appendChild(qbtn);
+      modesRow.appendChild(modeBtn);
     });
-    content.appendChild(quickRow);
+    content.appendChild(modesRow);
 
-    // Snap and Info row
-    const snapInfoRow = document.createElement("div");
-    snapInfoRow.className = "ara-v2-snap-info-row";
+    // Value input + Snap step row for Custom Ratio
+    const valSnapRow = document.createElement("div");
+    valSnapRow.className = "ara-v2-val-snap-row";
+
+    const valField = document.createElement("div");
+    valField.className = "ara-v2-field";
+    const valLabel = document.createElement("label");
+    valLabel.className = "ara-v2-label";
+    valLabel.textContent = state.custom_ratio_calc_mode === "megapixels" ? "Target Area (MP)" : "Side Length (px)";
+
+    const isMegapixels = state.custom_ratio_calc_mode === "megapixels";
+    const { wrapper: spinnerWrapper, input: inp } = createSpinnerInput(
+      state.custom_ratio_value,
+      (val) => {
+        const tempState = { ...state, custom_ratio_value: val };
+        if (state.custom_ratio_calc_mode === "megapixels") {
+          tempState.custom_ratio_value_megapixels = val;
+        } else if (state.custom_ratio_calc_mode === "max") {
+          tempState.custom_ratio_value_max = val;
+        } else {
+          tempState.custom_ratio_value_min = val;
+        }
+        const tempDims = calculateDims(tempState, pythonDims);
+        if (updatePreview) updatePreview(tempDims.w, tempDims.h);
+      },
+      (val) => {
+        state.custom_ratio_value = val;
+        if (state.custom_ratio_calc_mode === "megapixels") {
+          state.custom_ratio_value_megapixels = val;
+        } else if (state.custom_ratio_calc_mode === "max") {
+          state.custom_ratio_value_max = val;
+        } else {
+          state.custom_ratio_value_min = val;
+        }
+        writeState(node, state);
+        renderUI(node);
+      },
+      {
+        min: isMegapixels ? 0.1 : 64,
+        max: isMegapixels ? 67.1 : 8192,
+        getStep: () => isMegapixels ? 0.1 : (parseInt(state.snap) || 16),
+        isMegapixels: isMegapixels
+      }
+    );
+    valField.append(valLabel, spinnerWrapper);
 
     const snapGroup = document.createElement("div");
     snapGroup.className = "ara-v2-snap-group";
@@ -1579,110 +1659,8 @@ function renderUI(node) {
     });
     snapGroup.append(snapLabel, snapBtns);
 
-    const infoLabel = document.createElement("div");
-    infoLabel.className = "ara-v2-inline-info";
-    
-    updateInlineInfo = function(wVal, hVal) {
-      infoLabel.innerHTML = `<span class="accent">${ratioLabel(wVal, hVal)}</span> · ${megapixels(wVal, hVal)} MP`;
-    };
-    updateInlineInfo(dims.w, dims.h);
-
-    snapInfoRow.append(snapGroup, infoLabel);
-    content.appendChild(snapInfoRow);
-
-    // Width and Height row
-    const widthHeightRow = document.createElement("div");
-    widthHeightRow.className = "ara-v2-width-height-row";
-
-    const master = state.custom_ratio_master || "width";
-
-    // Left Field (Master input)
-    const wField = document.createElement("div");
-    wField.className = "ara-v2-field";
-
-    const masterSelect = document.createElement("select");
-    masterSelect.className = "ara-v2-select";
-    const optWidth = document.createElement("option");
-    optWidth.value = "width";
-    optWidth.textContent = "Width";
-    const optHeight = document.createElement("option");
-    optHeight.value = "height";
-    optHeight.textContent = "Height";
-    masterSelect.append(optWidth, optHeight);
-    masterSelect.value = master;
-    masterSelect.addEventListener("change", (e) => {
-      state.custom_ratio_master = masterSelect.value;
-      writeState(node, state);
-      renderUI(node);
-    });
-
-    let masterSpinner;
-    if (master === "width") {
-      masterSpinner = createSpinnerInput(
-        state.custom_ratio_width,
-        (val) => {
-          const tempState = { ...state, custom_ratio_width: val, custom_ratio_master: "width" };
-          const tempDims = calculateDims(tempState, pythonDims);
-          if (updatePreview) updatePreview(tempDims.w, tempDims.h);
-        },
-        (val) => {
-          state.custom_ratio_width = val;
-          state.custom_ratio_master = "width";
-          writeState(node, state);
-          renderUI(node);
-        },
-        {
-          min: 64,
-          max: 8192,
-          getStep: () => parseInt(state.snap) || 16,
-          isMegapixels: false
-        }
-      );
-    } else {
-      masterSpinner = createSpinnerInput(
-        state.custom_ratio_height,
-        (val) => {
-          const tempState = { ...state, custom_ratio_height: val, custom_ratio_master: "height" };
-          const tempDims = calculateDims(tempState, pythonDims);
-          if (updatePreview) updatePreview(tempDims.w, tempDims.h);
-        },
-        (val) => {
-          state.custom_ratio_height = val;
-          state.custom_ratio_master = "height";
-          writeState(node, state);
-          renderUI(node);
-        },
-        {
-          min: 64,
-          max: 8192,
-          getStep: () => parseInt(state.snap) || 16,
-          isMegapixels: false
-        }
-      );
-    }
-    wField.append(masterSelect, masterSpinner.wrapper);
-
-    // Right Field (Slave calculated readout)
-    const hField = document.createElement("div");
-    hField.className = "ara-v2-field";
-
-    const slaveLabel = document.createElement("label");
-    slaveLabel.className = "ara-v2-label";
-    slaveLabel.style.textAlign = "center";
-    slaveLabel.textContent = master === "width" ? "Height" : "Width";
-
-    const slaveInp = document.createElement("input");
-    slaveInp.type = "text";
-    slaveInp.className = "ara-v2-input";
-    slaveInp.disabled = true;
-    slaveInp.style.height = "24px";
-    slaveInp.style.boxSizing = "border-box";
-    slaveInp.value = master === "width" ? dims.h : dims.w;
-
-    hField.append(slaveLabel, slaveInp);
-
-    widthHeightRow.append(wField, hField);
-    content.appendChild(widthHeightRow);
+    valSnapRow.append(valField, snapGroup);
+    content.appendChild(valSnapRow);
 
   } else if (activeTab === "custom_dimensions") {
     // Snap and Info row

@@ -30,6 +30,11 @@ DEFAULT_STATE = {
     "custom_ratio_master": "width",
     "custom_ratio_width": 1024,
     "custom_ratio_height": 768,
+    "custom_ratio_calc_mode": "min",
+    "custom_ratio_value": 1024,
+    "custom_ratio_value_min": 1024,
+    "custom_ratio_value_max": 1024,
+    "custom_ratio_value_megapixels": 1.0,
     
     "custom_dimensions_width": 1024,
     "custom_dimensions_height": 1024,
@@ -184,21 +189,35 @@ class AspectRatioAdvancedV2:
                     rw, rh = 4.0, 3.0
                 r = rw / rh
 
-            master = state.get("custom_ratio_master", "width")
-            if master == "width":
-                try:
-                    w_base = float(state.get("custom_ratio_width", 1024))
-                except Exception:
-                    w_base = 1024.0
-                w = snap_to(w_base, snap)
-                h = snap_to(w / r, snap)
+            calc_mode = state.get("custom_ratio_calc_mode", "min")
+            try:
+                val = float(state.get("custom_ratio_value", 1024))
+            except Exception:
+                val = 1024.0
+
+            if calc_mode == "min":
+                if r >= 1.0:
+                    h_calc = val
+                    w_calc = val * r
+                else:
+                    w_calc = val
+                    h_calc = val / r
+            elif calc_mode == "max":
+                if r >= 1.0:
+                    w_calc = val
+                    h_calc = val / r
+                else:
+                    h_calc = val
+                    w_calc = val * r
+            elif calc_mode == "megapixels":
+                area = val * 1_000_000
+                w_calc = math.sqrt(area * r)
+                h_calc = w_calc / r
             else:
-                try:
-                    h_base = float(state.get("custom_ratio_height", 1024))
-                except Exception:
-                    h_base = 1024.0
-                h = snap_to(h_base, snap)
-                w = snap_to(h * r, snap)
+                w_calc, h_calc = 1024.0, 1024.0
+
+            w = snap_to(w_calc, snap)
+            h = snap_to(h_calc, snap)
 
         elif mode == "custom_dimensions":
             use_input_image = state.get("custom_dimensions_input_image", False)
