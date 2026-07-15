@@ -42,6 +42,7 @@ DEFAULT_STATE = {
     
     "scale_image_enabled": False,
     "scale_image_method": "auto",
+    "vae_encode_enabled": False,
     
     "width": 1024,
     "height": 1024
@@ -54,6 +55,7 @@ class AspectRatioAdvancedV2:
             "required": {},
             "optional": {
                 "image": ("IMAGE",),
+                "vae": ("VAE",),
             },
             "hidden": {
                 "unique_id": "UNIQUE_ID",
@@ -65,7 +67,7 @@ class AspectRatioAdvancedV2:
         }
 
     RETURN_TYPES = ("INT", "INT", "LATENT", "IMAGE")
-    RETURN_NAMES = ("width", "height", "empty_latent", "scaled_image")
+    RETURN_NAMES = ("width", "height", "latent", "scaled_image")
     FUNCTION = "calculate_resolution"
     CATEGORY = "CustomNodes/Resolution"
 
@@ -118,7 +120,7 @@ class AspectRatioAdvancedV2:
                 
             return scaled.permute(0, 2, 3, 1)
 
-    def calculate_resolution(self, ResolutionState, unique_id=None, image=None):
+    def calculate_resolution(self, ResolutionState, unique_id=None, image=None, vae=None):
         try:
             state = json.loads(ResolutionState)
         except Exception:
@@ -253,20 +255,32 @@ class AspectRatioAdvancedV2:
         if image is not None:
             batch_size = image.shape[0]
 
-        latent_w = w // 8
-        latent_h = h // 8
-        latent = torch.zeros([batch_size, 4, latent_h, latent_w])
-
         scale_enabled = state.get("scale_image_enabled", False)
         scale_method = state.get("scale_image_method", "bilinear")
+        vae_encode_enabled = state.get("vae_encode_enabled", False)
 
         scaled_image = None
         if image is not None:
+            if scale_enabled or (vae_encode_enabled and vae is not None):
+                img_to_encode = self.scale_image(image, w, h, scale_method)
+            else:
+                img_to_encode = image
+
             if scale_enabled:
-                scaled_image = self.scale_image(image, w, h, scale_method)
+                scaled_image = img_to_encode
             else:
                 scaled_image = image
         else:
             scaled_image = torch.zeros([1, 64, 64, 3])
+            img_to_encode = None
+
+        if vae_encode_enabled and vae is not None and img_to_encode is not None:
+            # VAE encode the scaled image. Slice channels to 3 (RGB) for VAE.
+            pixels = img_to_encode[:, :, :, :3]
+            latent = vae.encode(pixels)
+        else:
+            latent_w = w // 8
+            latent_h = h // 8
+            latent = torch.zeros([batch_size, 4, latent_h, latent_w])
 
         return (w, h, {"samples": latent}, scaled_image)

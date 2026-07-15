@@ -690,6 +690,7 @@ const DEFAULT_STATE = {
 
   scale_image_enabled: false,
   scale_image_method: "auto",
+  vae_encode_enabled: false,
 
   width: 1024,
   height: 1024
@@ -1201,6 +1202,17 @@ function renderUI(node) {
   }
 
   if (!root) return;
+
+  const imageInput = node.inputs?.find((i) => i.name === "image");
+  const vaeInput = node.inputs?.find((i) => i.name === "vae");
+  const isImageConnected = !!(imageInput && imageInput.link);
+  const isVaeConnected = !!(vaeInput && vaeInput.link);
+  const bothConnected = isImageConnected && isVaeConnected;
+
+  if (!bothConnected && state.vae_encode_enabled) {
+    state.vae_encode_enabled = false;
+    writeState(node, state);
+  }
 
   // Calculate live values
   const uiImageSize = getConnectedImageSize(node);
@@ -1839,6 +1851,41 @@ function renderUI(node) {
     toggleRow.appendChild(toggleLabel);
     scalePanel.appendChild(toggleRow);
 
+    // Toggle for VAE Encode
+    const vaeToggleRow = document.createElement("div");
+    vaeToggleRow.className = "ara-v2-toggle-row";
+
+    const vaeToggleLabel = document.createElement("label");
+    vaeToggleLabel.className = "ara-v2-toggle-container";
+    if (!bothConnected) {
+      vaeToggleLabel.style.opacity = "0.5";
+      vaeToggleLabel.style.cursor = "not-allowed";
+    }
+
+    const vaeCheckbox = document.createElement("input");
+    vaeCheckbox.type = "checkbox";
+    vaeCheckbox.className = "ara-v2-toggle-input";
+    vaeCheckbox.checked = state.vae_encode_enabled && bothConnected;
+    vaeCheckbox.disabled = !bothConnected;
+    vaeCheckbox.addEventListener("change", () => {
+      state.vae_encode_enabled = vaeCheckbox.checked;
+      writeState(node, state);
+      renderUI(node);
+    });
+
+    const vaeToggleSwitch = document.createElement("span");
+    vaeToggleSwitch.className = "ara-v2-toggle-switch";
+
+    const vaeLabelText = document.createElement("span");
+    vaeLabelText.textContent = "VAE Encode";
+    if (!bothConnected) {
+      vaeLabelText.title = "Requires both image and VAE to be connected";
+    }
+
+    vaeToggleLabel.append(vaeCheckbox, vaeToggleSwitch, vaeLabelText);
+    vaeToggleRow.appendChild(vaeToggleLabel);
+    scalePanel.appendChild(vaeToggleRow);
+
     // Group for Scaling Algorithm Label & Grid to keep them closely bound
     const algGroup = document.createElement("div");
     algGroup.style.display = "flex";
@@ -1982,6 +2029,11 @@ function setupNode(node) {
 
   node._araRoot = root;
 
+  // Initialize connection state
+  const imageInput = node.inputs?.find((i) => i.name === "image");
+  const vaeInput = node.inputs?.find((i) => i.name === "vae");
+  node._wasBothConnected = !!(imageInput && imageInput.link) && !!(vaeInput && vaeInput.link);
+
   queueMicrotask(() => {
     renderUI(node);
   });
@@ -2097,6 +2149,11 @@ app.registerExtension({
         this.size[1] = info.size[1];
       }
 
+      // Initialize connection state on configure
+      const imageInput = this.inputs?.find((i) => i.name === "image");
+      const vaeInput = this.inputs?.find((i) => i.name === "vae");
+      this._wasBothConnected = !!(imageInput && imageInput.link) && !!(vaeInput && vaeInput.link);
+
       if (this._araRoot) {
         renderUI(this);
       }
@@ -2112,6 +2169,32 @@ app.registerExtension({
     const _origConnectionsChange = nodeType.prototype.onConnectionsChange;
     nodeType.prototype.onConnectionsChange = function (type, slot, connected, link_info, input_info) {
       const r = _origConnectionsChange?.apply(this, arguments);
+
+      const imageInput = this.inputs?.find((i) => i.name === "image");
+      const vaeInput = this.inputs?.find((i) => i.name === "vae");
+      const isImageConnected = !!(imageInput && imageInput.link);
+      const isVaeConnected = !!(vaeInput && vaeInput.link);
+      const bothConnected = isImageConnected && isVaeConnected;
+
+      if (this._wasBothConnected === undefined) {
+        this._wasBothConnected = bothConnected;
+      } else {
+        const state = readState(this);
+        let changed = false;
+        if (bothConnected && !this._wasBothConnected) {
+          state.vae_encode_enabled = true;
+          changed = true;
+        } else if (!bothConnected && this._wasBothConnected) {
+          state.vae_encode_enabled = false;
+          changed = true;
+        }
+
+        if (changed) {
+          writeState(this, state);
+        }
+        this._wasBothConnected = bothConnected;
+      }
+
       renderUI(this);
       return r;
     };
