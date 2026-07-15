@@ -950,15 +950,101 @@ function createSpinnerInput(initialValue, onUpdate, onBlur, options = {}) {
   return { wrapper, input: inp };
 }
 
+function getGraphAncestors(graph) {
+  if (!graph) return [];
+  const chain = [graph];
+  let current = graph;
+  const root = graph.rootGraph || graph;
+  if (graph === root) return [root];
+
+  const visited = new Set([graph]);
+  while (current !== root) {
+    let found = false;
+    const rootNodes = root.nodes || root._nodes || [];
+    for (const n of rootNodes) {
+      if (n && n.subgraph === current) {
+        chain.push(root);
+        current = root;
+        found = true;
+        break;
+      }
+    }
+    if (found) break;
+
+    const subgraphs = root._subgraphs || root.subgraphs;
+    if (subgraphs) {
+      const sgValues = typeof subgraphs.values === "function" ? [...subgraphs.values()] : Object.values(subgraphs);
+      for (const sg of sgValues) {
+        if (sg === current || !sg) continue;
+        const sgNodes = sg.nodes || sg._nodes || [];
+        for (const n of sgNodes) {
+          if (n && n.subgraph === current) {
+            if (visited.has(sg)) { found = false; break; }
+            visited.add(sg);
+            chain.push(sg);
+            current = sg;
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
+      }
+    }
+
+    if (!found) {
+      if (!chain.includes(root)) chain.push(root);
+      break;
+    }
+  }
+  return chain;
+}
+
+function findSetterByNameInGraph(graph, startGraph, name) {
+  if (!name) return null;
+  const ancestors = getGraphAncestors(startGraph || graph);
+  for (const g of ancestors) {
+    const nodes = g.nodes || g._nodes || [];
+    for (const node of nodes) {
+      if (node && (node.type === "SetNode" || node.comfyClass === "SetNode")) {
+        const val = node.widgets?.[0]?.value;
+        if (val === name) {
+          return { node, graph: g };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function resolveSourceNode(graph, node, slotIndex = 0) {
+  if (!node || !node.inputs || !node.inputs[slotIndex]) return null;
+  const linkId = node.inputs[slotIndex].link;
+  if (!linkId) return null;
+  const link = graph.links[linkId];
+  if (!link) return null;
+  const originNode = graph.getNodeById(link.origin_id);
+  if (!originNode) return null;
+
+  if (originNode.type === "GetNode" || originNode.comfyClass === "GetNode") {
+    const tagName = originNode.widgets?.[0]?.value;
+    if (tagName) {
+      const setNodeEntry = findSetterByNameInGraph(graph, originNode.graph || graph, tagName);
+      if (setNodeEntry && setNodeEntry.node) {
+        return resolveSourceNode(setNodeEntry.graph || graph, setNodeEntry.node, 0);
+      }
+    }
+  }
+
+  return originNode;
+}
+
 function getConnectedImageSize(node) {
   if (!node.inputs || !node.inputs[0]) return null;
   const linkId = node.inputs[0].link;
   if (!linkId) return null;
   const graph = node.graph || app.graph;
   if (!graph) return null;
-  const link = graph.links[linkId];
-  if (!link) return null;
-  const originNode = graph.getNodeById(link.origin_id);
+  const originNode = resolveSourceNode(graph, node, 0);
   if (!originNode) return null;
 
   // 1. Try standard node images preview (HTMLImageElement)
