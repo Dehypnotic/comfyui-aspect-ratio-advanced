@@ -1239,7 +1239,7 @@ function renderUI(node) {
     { id: "preset", label: "Presets" },
     { id: "custom_ratio", label: "Custom Ratio" },
     { id: "custom_dimensions", label: "Custom Dims" },
-    { id: "scaled_image", label: "Scale Image" }
+    { id: "scaled_image", label: "Processing" }
   ];
 
   const activeTab = node._activeTab || state.mode;
