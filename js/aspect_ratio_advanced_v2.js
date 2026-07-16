@@ -2206,7 +2206,7 @@ app.registerExtension({
   name: "AspectRatioAdvancedV2.Extension",
 
   beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "AspectRatioAdvancedV2") return;
+    if (nodeData.name !== "dehypnotic_AspectRatio" && nodeData.name !== "AspectRatioAdvanced") return;
 
     // Aktiver manuell justering på selve node-prototypen
     nodeType.prototype.resizable = true;
@@ -2302,7 +2302,7 @@ app.registerExtension({
 
 
   nodeCreated(node) {
-    if (node.comfyClass !== "AspectRatioAdvancedV2" && node.type !== "AspectRatioAdvancedV2") return;
+    if (node.comfyClass !== "dehypnotic_AspectRatio" && node.comfyClass !== "AspectRatioAdvanced") return
     setupNode(node);
   },
 });

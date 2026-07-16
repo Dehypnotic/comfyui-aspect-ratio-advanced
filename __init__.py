@@ -1,16 +1,20 @@
-from .nodes.aspect_ratio_advanced import AspectRatioAdvanced
 from .nodes.aspect_ratio_advanced_v2 import AspectRatioAdvancedV2
 
 NODE_CLASS_MAPPINGS = {
-    "AspectRatioAdvanced": AspectRatioAdvanced,
-    "AspectRatioAdvancedV2": AspectRatioAdvancedV2
+    # Gamle workflows laster fortsatt koden, men brukeren blir varslet
+    "AspectRatioAdvanced": AspectRatioAdvancedV2,      
+    
+    # Det nye offisielle flaggskipet ditt
+    "dehypnotic_AspectRatio": AspectRatioAdvancedV2  
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "AspectRatioAdvanced": "AspectRatio V1 (Dehypnotic)",
-    "AspectRatioAdvancedV2": "AspectRatio V2 (Dehypnotic)"
+    # Tydelig beskjed i grensesnittet om å bytte ut noden
+    "AspectRatioAdvanced": "DEPRECATED - REPLACE",
+    "dehypnotic_AspectRatio": "AspectRatio (Dehypnotic)"
 }
 
 WEB_DIRECTORY = "./js"
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]
+
