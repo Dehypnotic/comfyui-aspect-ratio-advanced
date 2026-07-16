@@ -134,7 +134,7 @@ class AspectRatioAdvancedV2:
         w, h = 1024, 1024
 
         def snap_to(val, step):
-            return max(64, int(round(val / step) * step))
+            return max(64, int(math.floor(val / step + 0.5)) * step)
 
         if mode == "preset":
             ratio_str = state.get("ratio", "1:1 square")
