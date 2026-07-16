@@ -10,7 +10,7 @@ NODE_CLASS_MAPPINGS = {
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     # Tydelig beskjed i grensesnittet om å bytte ut noden
-    "AspectRatioAdvanced": "DEPRECATED - REPLACE",
+    "AspectRatioAdvanced": "AspectRatioAdvanced - DEPRECATED - REPLACE",
     "dehypnotic_AspectRatio": "AspectRatio (Dehypnotic)"
 }
 
