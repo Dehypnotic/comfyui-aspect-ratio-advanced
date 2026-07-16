@@ -2145,7 +2145,7 @@ api.addEventListener("aspect_ratio_advanced_v2.update_dims", (e) => {
   };
 
   const node = visit(app.graph);
-  if (node && (node.comfyClass === "AspectRatioAdvancedV2" || node.type === "AspectRatioAdvancedV2")) {
+  if (node && (node.comfyClass === "dehypnotic_AspectRatio" || node.comfyClass === "AspectRatioAdvanced" || node.type === "dehypnotic_AspectRatio" || node.type === "AspectRatioAdvanced")) {
     node._pythonDims = { w: width, h: height };
     const state = readState(node);
     state.width = width;
@@ -2163,7 +2163,7 @@ function buildNodeIndex() {
     const nodes = graph._nodes || graph.nodes || [];
     for (const n of nodes) {
       if (!n) continue;
-      if (n.comfyClass === "AspectRatioAdvancedV2" || n.type === "AspectRatioAdvancedV2") {
+      if (n.comfyClass === "dehypnotic_AspectRatio" || n.comfyClass === "AspectRatioAdvanced" || n.type === "dehypnotic_AspectRatio" || n.type === "AspectRatioAdvanced") {
         index.set(String(n.id), n);
       }
       const inner = n.subgraph || n.graph || n._graph;
@@ -2191,7 +2191,7 @@ app.graphToPrompt = async function (...args) {
     let index = null;
     for (const id in out) {
       const entry = out[id];
-      if (!entry || entry.class_type !== "AspectRatioAdvancedV2") continue;
+      if (!entry || (entry.class_type !== "dehypnotic_AspectRatio" && entry.class_type !== "AspectRatioAdvanced")) continue;
       if (!index) index = buildNodeIndex();
       const node = findNode(index, id);
       const state = node ? JSON.stringify(readState(node)) : JSON.stringify(DEFAULT_STATE);
