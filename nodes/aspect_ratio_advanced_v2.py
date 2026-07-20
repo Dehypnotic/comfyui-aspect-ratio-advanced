@@ -9,7 +9,7 @@ try:
 except ImportError:
     PromptServer = None
 
-_CATEGORY = "🧘 Dehypnotic/📐 Aspect Ratio"
+CATEGORY = "🧘 Dehypnotic/📐 Aspect Ratio"
 
 DEFAULT_STATE = {
     "mode": "preset",
@@ -79,7 +79,6 @@ class AspectRatioAdvancedV2:
     RETURN_TYPES = ("INT", "INT", "LATENT", "IMAGE")
     RETURN_NAMES = ("width", "height", "latent", "scaled_image")
     FUNCTION = "calculate_resolution"
-    CATEGORY = "CustomNodes/Resolution"
 
     def scale_image(self, image, width, height, method):
         # image tensor is expected to be [B, H, W, C]
