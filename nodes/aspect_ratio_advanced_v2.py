@@ -9,7 +9,7 @@ try:
 except ImportError:
     PromptServer = None
 
-CATEGORY = "🧘 Dehypnotic/📐 Aspect Ratio"
+_CATEGORY = "🧘 Dehypnotic/📐 Aspect Ratio"
 
 DEFAULT_STATE = {
     "mode": "preset",
