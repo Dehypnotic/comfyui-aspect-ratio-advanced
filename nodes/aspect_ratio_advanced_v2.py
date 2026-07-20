@@ -9,6 +9,8 @@ try:
 except ImportError:
     PromptServer = None
 
+CATEGORY = "🧘 Dehypnotic/📐 Aspect Ratio"
+
 DEFAULT_STATE = {
     "mode": "preset",
     "ratio": "1:1 square",
@@ -56,7 +58,7 @@ class AspectRatioAdvancedV2:
     "together with another for image scaling. The snap value is the nearest multiple of the value to which "
     "the width and height will be rounded."
     )
-    
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
