@@ -50,10 +50,10 @@ DEFAULT_STATE = {
 
 class AspectRatioAdvancedV2:
     DESCRIPTION = (
-    "In Presets, you can double-click the 3 smaller preset-buttons to set your own presets. Attach an "
-    "image to use it as a reference for custom ratio or 'dims' (short for dimensions, of course). " 
-    "You can also VAE encode the image for use in i2i or similar workflows. Switch for it in Processing "
-    "together with another for image scaling. The snap value is the nearest multiple of the value to which "
+    "In Presets, double-click the 3 smaller preset-buttons to set your own presets. Attach an "
+    "image to use it as a reference for custom ratio or 'dims' (short for dimensions). " 
+    "You can also VAE encode the image for use in I2I or similar workflows. Switch for it in Processing "
+    "and another for image scaling. The snap value is the nearest multiple of the value to which "
     "the width and height will be rounded."
     )
 
