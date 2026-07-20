@@ -50,12 +50,13 @@ DEFAULT_STATE = {
 
 class AspectRatioAdvancedV2:
     DESCRIPTION = (
-    "In Presets, you may double-click the smaller preset-buttons to set your own presets. Attach an "
+    "In Presets, you can double-click the 3 smaller preset-buttons to set your own presets. Attach an "
     "image to use it as a reference for custom ratio or 'dims' (short for dimensions, of course). " 
-    "You may also VAE encode an image for use in i2i and similar workflows. Switch for it in Processing, "
-    "together with another and algorithms for image scaling. The snap value is the nearest multiple of "
-    "the value to which the width and height will be rounded."
+    "You can also VAE encode the image for use in i2i or similar workflows. Switch for it in Processing "
+    "together with another for image scaling. The snap value is the nearest multiple of the value to which "
+    "the width and height will be rounded."
     )
+    
     @classmethod
     def INPUT_TYPES(cls):
         return {
